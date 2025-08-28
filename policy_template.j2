@@ -1,0 +1,32 @@
+{
+    "name": "{{BusinessName}}.{{ApplicationName}}.{{appd_env}}.{{appd_tier}} | Application Health",
+    "enabled": true,
+    "executeActionsInBatch": true,
+    "actions": [
+        {
+            "actionName": "email_list",
+            "actionType": "EMAIL"
+        },
+        {
+            "actionName": "ServiceNow_GreenField_HTTPAction",
+            "actionType": "HTTP_REQUEST"
+        }
+    ],
+    "events": {
+        "healthRuleEvents": {
+            "healthRuleEventTypes": [
+                "HEALTH_RULE_OPEN_CRITICAL",
+                "HEALTH_RULE_CLOSE_CRITICAL",
+                "HEALTH_RULE_CANCELED_CRITICAL"
+            ],
+            "healthRuleScope": {
+                "healthRuleScopeType": "SPECIFIC_HEALTH_RULES",
+                "healthRules": [
+                    {% for hr in healthrule_names %}
+                         "{{ hr }}"{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            }
+        }
+    }
+}
