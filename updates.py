@@ -33,27 +33,40 @@ def create_actions(appd, appd_id, config, params):
             log.warning("Action failed: %s", msg)
 
 
-def _invoke_dynamic_policies(appd, appd_id, config, tier_type, monitoring, params):
+def _invoke_dynamic_policies(self, appd_id, policy_payload, hr_payloads):
     """
-    1) Ensures health rules exist & collects their names
-    2) Renders each policy with that name list injected
-    3) Posts the policy
+    Create health rules, dedupe their names, inject into the policy payload,
+    then create the policy in AppDynamics.
     """
-    # 1) Create/confirm health rules & get their names
-    params["healthrule_names"] = create_healthrules(appd, appd_id, config, tier_type, monitoring, params)
-    log.info("Using health rules: %s", params["healthrule_names"])
 
-    # 2) Render & post each policy
-    for tmpl in config.get("policies", []):
-        policy = render_template_json(tmpl, params)
-        res = appd.create_policy_with_dynamic_healthrules(appd_id, policy)
-        name = policy.get("name", "<unknown>")
-        if res.get("success"):
-            log.info("Policy '%s' created or updated", name)
-        else:
-            msg = res.get("message") or res.get("error")
-            log.warning("Policy '%s' failed: %s", name, msg)
+    # 1. Create or reuse health rules
+    hr_results = self.api.create_health_rules(appd_id, hr_payloads)
 
+    # 2. Collect names of all successfully created/existing health rules
+    healthrule_names = [
+        r["data"]["name"] for r in hr_results
+        if r.get("success") and r.get("data", {}).get("name")
+    ]
+
+    # 3. Remove duplicates while preserving order
+    seen = set()
+    unique_healthrule_names = []
+    for name in healthrule_names:
+        if name not in seen:
+            seen.add(name)
+            unique_healthrule_names.append(name)
+
+    # 4. Inject health rules into the policy payload
+    policy_payload["healthRuleNames"] = unique_healthrule_names
+
+    # 5. Create the policy
+    log.info(f"Creating policy for AppD ID: {appd_id} with {len(unique_healthrule_names)} health rules")
+    policy_result = self.api.post_appd_policy(appd_id, policy_payload)
+
+    if not policy_result.get("success"):
+        log.error(f"Policy creation failed: {policy_result.get('message') or policy_result.get('error')}")
+
+    return policy_result
 
 def main():
     # 1) Load config & secrets
