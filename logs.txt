@@ -1,0 +1,91 @@
+time=2025-08-28 17:38:58,789 level=INFO message=Loaded config.json successfully
+2025-08-28 17:38:59,415 WARNING  Failed to create action for 154: Action with given name already exists. (Status: 400)
+time=2025-08-28 17:38:59,415 level=WARNING message=Action failed: Action with given name already exists.
+2025-08-28 17:38:59,586 WARNING  Failed to create action for 154: Action with given name already exists. (Status: 400)
+time=2025-08-28 17:38:59,586 level=WARNING message=Action failed: Action with given name already exists.
+2025-08-28 17:38:59,598 INFO     Creating health rule 1/14 for AppD ID: 154
+2025-08-28 17:38:59,743 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | CLR GC' already exists; treating as success
+2025-08-28 17:38:59,743 INFO     Creating health rule 2/14 for AppD ID: 154
+2025-08-28 17:38:59,839 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Heap' already exists; treating as success
+2025-08-28 17:38:59,839 INFO     Creating health rule 3/14 for AppD ID: 154
+2025-08-28 17:38:59,953 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Thread' already exists; treating as success
+2025-08-28 17:38:59,953 INFO     Creating health rule 4/14 for AppD ID: 154
+2025-08-28 17:39:00,216 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node ART' already exists; treating as success
+2025-08-28 17:39:00,216 INFO     Creating health rule 5/14 for AppD ID: 154
+2025-08-28 17:39:00,335 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPM' already exists; treating as success
+2025-08-28 17:39:00,335 INFO     Creating health rule 6/14 for AppD ID: 154
+2025-08-28 17:39:00,442 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPU' already exists; treating as success
+2025-08-28 17:39:00,442 INFO     Creating health rule 7/14 for AppD ID: 154
+2025-08-28 17:39:00,541 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node EPM' already exists; treating as success
+2025-08-28 17:39:00,541 INFO     Creating health rule 8/14 for AppD ID: 154
+2025-08-28 17:39:00,737 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Disk Space' already exists; treating as success
+2025-08-28 17:39:00,737 INFO     Creating health rule 9/14 for AppD ID: 154
+2025-08-28 17:39:00,827 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier ART' already exists; treating as success
+2025-08-28 17:39:00,827 INFO     Creating health rule 10/14 for AppD ID: 154
+2025-08-28 17:39:00,925 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | App Availability' already exists; treating as success
+2025-08-28 17:39:00,925 INFO     Creating health rule 11/14 for AppD ID: 154
+2025-08-28 17:39:01,029 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPM' already exists; treating as success
+2025-08-28 17:39:01,029 INFO     Creating health rule 12/14 for AppD ID: 154
+2025-08-28 17:39:01,168 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPU' already exists; treating as success
+2025-08-28 17:39:01,168 INFO     Creating health rule 13/14 for AppD ID: 154
+2025-08-28 17:39:01,256 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier EPM' already exists; treating as success
+2025-08-28 17:39:01,256 INFO     Creating health rule 14/14 for AppD ID: 154
+2025-08-28 17:39:01,342 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier Memory' already exists; treating as success
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | CLR GC' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Heap' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Thread' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node ART' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPM' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPU' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node EPM' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Disk Space' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier ART' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | App Availability' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPM' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPU' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier EPM' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier Memory' created or already existed
+time=2025-08-28 17:39:01,342 level=INFO message=Using health rules: ['AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | CLR GC', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Heap', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Thread', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node ART', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPM', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPU', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node EPM', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Disk Space', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier ART', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | App Availability', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPM', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPU', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier EPM', 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier Memory']
+2025-08-28 17:39:01,343 INFO     Creating health rule 1/14 for AppD ID: 154
+2025-08-28 17:39:01,473 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | CLR GC' already exists; treating as success
+2025-08-28 17:39:01,474 INFO     Creating health rule 2/14 for AppD ID: 154
+2025-08-28 17:39:01,607 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Heap' already exists; treating as success
+2025-08-28 17:39:01,607 INFO     Creating health rule 3/14 for AppD ID: 154
+2025-08-28 17:39:01,727 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Thread' already exists; treating as success
+2025-08-28 17:39:01,727 INFO     Creating health rule 4/14 for AppD ID: 154
+2025-08-28 17:39:01,854 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node ART' already exists; treating as success
+2025-08-28 17:39:01,854 INFO     Creating health rule 5/14 for AppD ID: 154
+2025-08-28 17:39:01,976 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPM' already exists; treating as success
+2025-08-28 17:39:01,976 INFO     Creating health rule 6/14 for AppD ID: 154
+2025-08-28 17:39:02,073 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPU' already exists; treating as success
+2025-08-28 17:39:02,073 INFO     Creating health rule 7/14 for AppD ID: 154
+2025-08-28 17:39:02,178 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node EPM' already exists; treating as success
+2025-08-28 17:39:02,178 INFO     Creating health rule 8/14 for AppD ID: 154
+2025-08-28 17:39:02,269 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Disk Space' already exists; treating as success
+2025-08-28 17:39:02,269 INFO     Creating health rule 9/14 for AppD ID: 154
+2025-08-28 17:39:02,408 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier ART' already exists; treating as success
+2025-08-28 17:39:02,408 INFO     Creating health rule 10/14 for AppD ID: 154
+2025-08-28 17:39:02,524 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | App Availability' already exists; treating as success
+2025-08-28 17:39:02,524 INFO     Creating health rule 11/14 for AppD ID: 154
+2025-08-28 17:39:02,613 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPM' already exists; treating as success
+2025-08-28 17:39:02,613 INFO     Creating health rule 12/14 for AppD ID: 154
+2025-08-28 17:39:02,698 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPU' already exists; treating as success
+2025-08-28 17:39:02,698 INFO     Creating health rule 13/14 for AppD ID: 154
+2025-08-28 17:39:02,789 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier EPM' already exists; treating as success
+2025-08-28 17:39:02,790 INFO     Creating health rule 14/14 for AppD ID: 154
+2025-08-28 17:39:02,877 INFO     Health Rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier Memory' already exists; treating as success
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | CLR GC' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Heap' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node Thread' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node ART' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPM' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node CPU' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Node EPM' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Disk Space' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier ART' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | App Availability' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPM' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier CPU' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier EPM' created or already existed
+time=2025-08-28 17:39:02,877 level=INFO message=Health rule 'AFFILIATES.ahm_aaview_qa1.NONPROD.Default Web Site | Tier Memory' created or already existed
+Onboarding Default Web Site () for ahm_aaview_qa1 
