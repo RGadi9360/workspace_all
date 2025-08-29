@@ -119,24 +119,43 @@ def create_actions(appd, appd_id, config, params):
 
 def _invoke_dynamic_policies(appd, appd_id, config, tier_type, monitoring, params):
     """
-    1) Ensures health rules exist & collects their names
+    1) Ensures health rules exist & collects their names (deduped)
     2) Renders each policy with that name list injected
     3) Posts the policy
     """
     # 1) Create/confirm health rules & get their names
-    params["healthrule_names"] = create_healthrules(appd, appd_id, config, tier_type, monitoring, params)
-    log.info("Using health rules: %s", params["healthrule_names"])
+    hr_names = create_healthrules(appd, appd_id, config, tier_type, monitoring, params)
+
+    # Deduplicate while preserving order
+    seen = set()
+    unique_hr_names = []
+    for name in hr_names:
+        if name not in seen:
+            seen.add(name)
+            unique_hr_names.append(name)
+
+    if not unique_hr_names:
+        log.warning("No valid health rules found. Skipping policy creation.")
+        return
+
+    params["healthrule_names"] = unique_hr_names
+    log.info("Using health rules for policy creation: %s", unique_hr_names)
 
     # 2) Render & post each policy
     for tmpl in config.get("policies", []):
         policy = render_template_json(tmpl, params)
-        res = appd.create_policy_with_dynamic_healthrules(appd_id, policy)
         name = policy.get("name", "<unknown>")
+        log.info("Attempting to create policy '%s'...", name)
+
+        res = appd.create_policy_with_dynamic_healthrules(appd_id, policy)
+
+        # 3) Log outcome
         if res.get("success"):
-            log.info("Policy '%s' created or updated", name)
+            log.info("Policy '%s' created or updated successfully", name)
         else:
             msg = res.get("message") or res.get("error")
             log.warning("Policy '%s' failed: %s", name, msg)
+
 
 
 # ─── Main Flow ────────────────────────────────────────────────────────────────
