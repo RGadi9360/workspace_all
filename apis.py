@@ -91,7 +91,7 @@ class AppDynamics:
             raise
 
 
-    def _post(self, endpoint, appd_id, payload, entity_name):
+       def _post(self, endpoint, appd_id, payload, entity_name):
         # Guard against bad payloads 
         if isinstance(payload, str):
             log.error(
@@ -108,44 +108,49 @@ class AppDynamics:
     
         try:
             resp = self.session.post(url, params=self.params, json=payload)
-    
-            # Idempotent health-rule creation: 409 = already exists
+            name = payload.get("name")
+
+            # ✅ Treat 409 Conflict (already exists) as success for health rules
             if resp.status_code == 409 and endpoint == "health-rules":
-                name = payload.get("name")
                 log.info(
-                    f"{entity_name.title()} '{name}' already exists; "
-                    "treating as success"
+                    f"{entity_name.title()} '{name}' already exists for {appd_id}; treating as success."
                 )
-                return {"success": True, "data": {"name": name}}
-    
-            # Everything else must be 201 Created
-            if resp.status_code != 201:
+                return {"success": True, "data": {"name": name}, "status": 409}
+
+            # ✅ Expected 201 Created on normal success
+            if resp.status_code == 201:
+                log.info(
+                    f"Successfully created {entity_name} '{name}' for {appd_id} "
+                    f"(Status: {resp.status_code})"
+                )
+                # Some AppD endpoints return empty body on success → fallback to payload
                 try:
-                    msg = resp.json().get("message", resp.text)
+                    data = resp.json()
                 except ValueError:
-                    msg = resp.text
-                log.warning(
-                    f"Failed to create {entity_name} for {appd_id}: "
-                    f"{msg} (Status: {resp.status_code})"
-                )
-                return {
-                    "success": False,
-                    "status": resp.status_code,
-                    "message": msg,
-                }
-    
-            # Success branch
-            log.info(
-                f"Successfully created {entity_name} for {appd_id} "
-                f"(Status: {resp.status_code})"
+                    data = {"name": name}
+                return {"success": True, "data": data, "status": resp.status_code}
+
+            # ❌ Any other unexpected code
+            try:
+                msg = resp.json().get("message", resp.text)
+            except ValueError:
+                msg = resp.text
+            log.warning(
+                f"Failed to create {entity_name} '{name}' for {appd_id}: "
+                f"{msg} (Status: {resp.status_code})"
             )
-            return {"success": True, "data": resp.json()}
+            return {
+                "success": False,
+                "status": resp.status_code,
+                "message": msg,
+                "data": {"name": name},
+            }
     
         except Exception as e:
             log.exception(
                 f"Exception while creating {entity_name} for {appd_id}"
             )
-            return {"success": False, "error": str(e)}
+            return {"success": False, "error": str(e), "data": {"name": payload.get("name")}}
 
 
     def post_appd_hr(self, appd_id, payload):
