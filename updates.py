@@ -1,173 +1,262 @@
-def create_healthrules(appd, appd_id, config, tier_type, monitoring, params):
+import os
+from sys import exit
+from pathlib import Path
+from jinja2.exceptions import TemplateNotFound
+import json
+import urllib.parse
+from logger import logger
+from apis import AppDynamics
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateNotFound
+from pathlib import Path
+from copy import deepcopy
+
+log = logger
+
+# Load all available Jinja2 templates to be called for later rendering
+template_env = Environment(
+    loader=FileSystemLoader(
+        searchpath=Path(__file__).parent.parent.joinpath("templates"),
+    ),
+    undefined=StrictUndefined,
+    keep_trailing_newline=True,
+    lstrip_blocks=True,
+    trim_blocks=True,
+)
+
+# Fetch and trim environment variables
+appd_env = os.getenv("APP_ENV", "").strip()
+BusinessName = os.getenv("BusinessName", "").strip()
+ApplicationName = os.getenv("ApplicationName", "").strip()
+appd_tier = os.getenv("APPD_TIER", "").strip()
+email_list = os.getenv("USER_EMAIL", "").strip()
+user_email = [email.strip() for email in email_list.split(",") if email.strip()]
+account_name = os.getenv("APPD_CON", "").strip()
+secrets_file_path = os.getenv("SECRETS_PATH", "").strip()
+critical_value = os.getenv("CRITICAL_VALUE", "").strip()
+warning_value = os.getenv("WARNING_VALUE", "").strip()
+update_flag = os.getenv("UPDATE", "").strip().lower() == "true"
+healthrule_name = os.getenv("HEALTHRULE_NAME", "").strip()
+
+# load secrets
+
+def get_secrets(account_name: str):
+    account_name_upper = account_name.upper()
+    formatted_account_name = account_name_upper.replace('-', '_')
+    print(secrets_file_path)
+
+    with open(secrets_file_path, 'r') as file:
+        secrets = json.load(file)
+    client_id = secrets.get(f"{formatted_account_name}_CLIENT_ID")
+    client_secret = secrets.get(f"{formatted_account_name}_SECRET")
+    
+    return client_id, client_secret
+
+# Load local config
+def load_config():
     """
-    Create or confirm health rules. Returns list of created/existing names.
+    Scans the local repositories for config.json file and loads it as
+    a dictionary.
     """
-    templates = select_healthrule_templates(config, tier_type, monitoring)
-    payloads = [render_template_json(t, params) for t in templates]
-    results = appd.create_health_rules(appd_id, payloads)
+    config = {}
+    # Attempt to load the config.json from the local repository.
+    try:
+        with open("config.json", "r") as jsonfile:
+            config = json.load(jsonfile)
+            print("Load config successful\n")
+            return config
 
-    hr_names = []
-    for r in results:
-        if r.get("success") and r.get("data", {}).get("name"):
-            name = r["data"]["name"]
-            log.info("Health rule '%s' created or already existed", name)
-            hr_names.append(name)
-        else:
-            msg = r.get("message") or r.get("error")
-            log.warning("Health rule failed: %s", msg)
+    except FileNotFoundError:
+        print(os.getcwd())
+        print("Could not find config.json in project root")
 
-    return hr_names
+    except json.JSONDecodeError as error:
+        print("Corrupted or Malformed JSON in config")
+        print(error)
 
-
-def create_actions(appd, appd_id, config, params):
+def render_template_json(template, params):
     """
-    Create base actions. Logs successes and duplicates.
+    Accepts a template filename and parameters to pass to the template
+    when rendering. Produces a rendered template as a string.
+    
     """
-    for tmpl in config["base_actions"]:
-        payload = render_template_json(tmpl, params)
-        res = appd.post_appd_action(appd_id, payload)
-        if res.get("success") and res.get("data", {}).get("name"):
-            log.info("Action '%s' created or already existed", res["data"]["name"])
-        else:
-            msg = res.get("message") or res.get("error")
-            log.warning("Action failed: %s", msg)
+    try:
+        appd_obj = template_env.get_template(template).render(params)
+        appd_obj_json = json.loads(appd_obj)
+        json_string = json.dumps(appd_obj_json, indent=2)
+        return json_string
 
+    except TemplateNotFound as e:
+        exit(f"{e.__class__.__name__} : templates/{e}")
 
-def _invoke_dynamic_policies(self, appd_id, policy_payload, hr_payloads):
-    """
-    Create health rules, dedupe their names, inject into the policy payload,
-    then create the policy in AppDynamics.
-    """
+def get_delete_policy_names():
+    policy_names = []
 
-    # 1. Create or reuse health rules
-    hr_results = self.api.create_health_rules(appd_id, hr_payloads)
+    policy_params = deepcopy(params)
+    policy_params["healthrules"] = ["dummy_name"]  ## Dummy healthrule names to render policy
 
-    # 2. Collect names of all successfully created/existing health rules
-    healthrule_names = [
-        r["data"]["name"] for r in hr_results
-        if r.get("success") and r.get("data", {}).get("name")
-    ]
+    if tier_type == "Application Server":        
+        # Create Linux specific policies
+        for i in config["jvm_policy"]:
+            try:
+                linux_policy_json = render_template_json(i, policy_params)
+                policy_names.append(json.loads(linux_policy_json).get("name").strip())
+            except Exception as e:
+                log.warning(f"Failed to render template jvm_policy for {appd_tier}: {e}")
+                continue  # Skip to next action
+    
+    elif tier_type == ".NET Application Server":
+        # Create Windows specific policies
+        for i in config["clr_policy"]:
+            try:
+                windows_policy_json = render_template_json(i, policy_params)
+                policy_names.append(json.loads(windows_policy_json).get("name").strip())
+            except Exception as e:
+                log.warning(f"Failed to render template jvm_policy for {appd_tier}: {e}")
+                continue  # Skip to next action
 
-    # 3. Remove duplicates while preserving order
-    seen = set()
-    unique_healthrule_names = []
-    for name in healthrule_names:
-        if name not in seen:
-            seen.add(name)
-            unique_healthrule_names.append(name)
+    else:
+        # Create Base Policies
+        for i in config["base_policies"]:
+            base_policy_json = render_template_json(i, policy_params)
+            policy_names.append(json.loads(base_policy_json).get("name").strip())
 
-    # 4. Inject health rules into the policy payload
-    policy_payload["healthRuleNames"] = unique_healthrule_names
+    log.info(f"Policies to be deleted: {', '.join(policy_names)}")
+    return policy_names
 
-    # 5. Create the policy
-    log.info(f"Creating policy for AppD ID: {appd_id} with {len(unique_healthrule_names)} health rules")
-    policy_result = self.api.post_appd_policy(appd_id, policy_payload)
+def delete_policies():
+    log.info("------------------------\n")
+    log.info("Starting policy deletion...\n")
 
-    if not policy_result.get("success"):
-        log.error(f"Policy creation failed: {policy_result.get('message') or policy_result.get('error')}")
+    policy_names = get_delete_policy_names()
 
-    return policy_result
+    policy_ids = appd.get_appd_policy_ids(appd_id, policy_names)
+
+    for policy_id in policy_ids:
+        try:
+            log.info(f"Deleting policy ID {policy_id} for {appd_tier}...")
+            appd.delete_appd_policy(appd_id, policy_id)
+            log.info(f"Successfully deleted policy ID {policy_id} for {appd_tier}...!")
+        except Exception as e:
+            log.error(f"Failed to delete policy ID {policy_id} for {appd_tier}: {str(e)}")
+            continue
+
+def get_delete_action_names():
+    action_names = []
+
+    for i in config["base_actions"]:
+        base_action_json = render_template_json(i, params)
+        action_names.append(json.loads(base_action_json).get("name").strip())
+
+    log.info(f"Actions to be deleted: {', '.join(action_names)}")
+    return action_names
+
+def delete_actions():
+    log.info("------------------------\n")
+    log.info("Starting action deletion...\n")
+
+    action_names = get_delete_action_names()
+
+    action_ids = appd.get_appd_action_ids(appd_id, action_names)
+
+    for action_id in action_ids:
+        try:
+            log.info(f"Deleting action ID {action_id} for {appd_tier}...")
+            appd.delete_appd_action(appd_id, action_id)
+            log.info(f"Successfully deleted action ID {action_id} for {appd_tier}...!")
+        except Exception as e:
+            log.error(f"Failed to delete action ID {action_id} for {appd_tier}: {str(e)}")
+            continue
+    
+def get_delete_healthrule_names():   
+    healthrule_names = []
+
+    if tier_type == "Application Server":
+        # Create JVM specific health rules
+        for i in config["jvm_healthrules"]:
+            jvmhr_json = render_template_json(i, params)
+            healthrule_names.append(json.loads(jvmhr_json).get("name").strip())
+
+    elif tier_type == ".NET Application Server":
+        # Create Dot net specific health rules
+        for i in config["clr_healthrules"]:
+            clrhr_json = render_template_json(i, params)
+            healthrule_names.append(json.loads(clrhr_json).get("name").strip())
+
+    else:
+        # Create Base Health rules
+        for i in config["base_healthrules"]:
+            hr_json = render_template_json(i, params)
+            healthrule_names.append(json.loads(hr_json).get("name").strip())
+
+    log.info(f"Health rules to be deleted: {', '.join(healthrule_names)}")
+    return healthrule_names
+
+def delete_healthrules():
+    log.info("------------------------\n")
+    log.info("Starting health rule deletion...\n")
+
+    healthrule_names = get_delete_healthrule_names()
+
+    healthrule_ids = appd.get_appd_hr_ids(appd_id, healthrule_names)
+
+    for hr_id in healthrule_ids:
+        try:
+            log.info(f"Deleting health rule ID {hr_id} for {appd_tier}...")
+            appd.delete_appd_hr(appd_id, hr_id)
+            log.info(f"Successfully deleted health rule ID {hr_id} for {appd_tier}...!")
+        except Exception as e:
+            log.error(f"Failed to delete health rule ID {hr_id} for {appd_tier}: {str(e)}")
+            continue
 
 def main():
-    # 1) Load config & secrets
-    config = load_config()
-    client_id, client_secret = get_secrets(account_name)
+    """AppDynamics HR Generator"""
 
-    # 2) Instantiate client & resolve IDs
-    appd = AppDynamics(appd_env, client_id, account_name, client_secret)
-    appd_id = appd.get_appID(ApplicationName)
+    log.info("################################")
+    log.info("##   AppDynamics Onboarder    ##")
+    log.info("################################\n")
 
-    # 3) Determine tier_type for non-synthetic runs
-    tier_type = None
-    if monitoring != "synthetic" and not update_flag:
-        if not appd_tier:
-            log.error("APPD_TIER is required for this operation.")
-            sys.exit(1)
-        tiers = appd.get_appd_tier(appd_id, appd_tier)
-        if not tiers:
-            log.error("Tier '%s' not found in app %s", appd_tier, ApplicationName)
-            sys.exit(1)
-        tier_type = tiers[0]["type"]
 
-    # 4) Build template params
-    params = {
-        "appd_env":        appd_env,
-        "BusinessName":    BusinessName,
-        "ApplicationName": ApplicationName,
-        "appd_tier":       appd_tier,
-        "user_email":      user_email,
-        "critical_value":  critical_value,
-        "warning_value":   warning_value,
-        "update":          update_flag,
-        "healthrule_name": healthrule_name,
-    }
-
-    # 5) Onboarding vs. update
-    try:
-        if monitoring == "synthetic" or tier_type in config.get("supported_tier_types", []):
-            # Actions + Policies (health rules handled inside _invoke_dynamic_policies)
-            create_actions(appd, appd_id, config, params)
-            _invoke_dynamic_policies(appd, appd_id, config, tier_type, monitoring, params)
-        else:
-            log.warning("Skipping unsupported tier type: %s", tier_type)
-    except Exception as e:
-        log.error("Onboarding error: %s", e)
-        return 1
-
-    # 6) Threshold update path
-    if update_flag and healthrule_name:
-        res = appd.update_health_rule_thresholds(
+    if params["update"] and params["healthrule_name"]:
+        result = appd.update_health_rule_thresholds(
             appd_id,
-            healthrule_name,
-            critical_value,
-            warning_value
+            params["healthrule_name"],
+            params["critical_value"],
+            params["warning_value"]
         )
-        if res.get("success"):
-            log.info(res["message"])
+        if result["success"]:
+            log.info(result["message"])
         else:
-            log.warning(res.get("message") or res.get("error"))
+            log.warning(result.get("message", result.get("error", "Unknown error")))
 
-    # 7) One-off health-rule creation
-    elif create_healthrule_flag:
-        if not appd_tier:
-            log.error("APPD_TIER is required for one-off creation.")
-            return 1
-        params["healthrule_names"] = create_healthrules(appd, appd_id, config, tier_type, monitoring, params)
+    # Exit gracefully.
+    exit(0)
 
-    return 0
-=========================
-apis.py
+# Parameters dictionary to pass to templates
+client_id, client_secret = get_secrets(account_name)
+params = {
+    "appd_env": appd_env,
+    "BusinessName": BusinessName,
+    "ApplicationName": ApplicationName,
+    "appd_tier": appd_tier,
+    "user_email": user_email,
+    "client_id": client_id,
+    "account_name": account_name,
+    "client_secret": client_secret,
+    "critical_value": critical_value if critical_value else None,
+    "warning_value": warning_value if warning_value else None,
+    "update": update_flag,
+    "healthrule_name": healthrule_name
+}
+appd = AppDynamics(
+    params["appd_env"],
+    params["client_id"],
+    params["account_name"],
+    params["client_secret"]
+)
+#appd = AppDynamics(params['appd_env'], params['client_id'], params['account_name'], params['client_secret'] )
+appd_id = appd.get_appID(params['ApplicationName'])
+tier_type = appd.get_appd_tier(appd_id, params['appd_tier'])[0]["type"]
+config = load_config()
 
-def create_policy_with_dynamic_healthrules(self, appd_id, policy_payload):
-    """
-    Posts the given policy with already-injected healthRule names.
-    Assumes health rules were created earlier in the flow.
-    """
-    try:
-        scope = policy_payload["events"]["healthRuleEvents"]["healthRuleScope"]
-        if scope.get("healthRuleScopeType") == "SPECIFIC_HEALTH_RULES":
-            if not scope.get("healthRules"):
-                log.warning("Policy has SPECIFIC_HEALTH_RULES but no healthRules provided.")
-        return self.post_appd_policy(appd_id, policy_payload)
-    except Exception as e:
-        log.exception(f"Error creating policy for app {appd_id}")
-        return {"success": False, "error": str(e)}
-=========================
-
-main.py
-
-create_healthrules() now returns a list of names.
-
-_invoke_dynamic_policies() is the single place that creates HRs + injects them into policies.
-
-No duplicate HR creation in apis.py.
-
-apis.py
-
-create_policy_with_dynamic_healthrules() only posts the policy.
-
-It no longer recreates health rules.
-
-policy.j2
-
-Already set up to take healthrule_names from params
+if __name__ == "__main__":
+    main()
